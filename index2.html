@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Income Tax Calculator</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip({
+        placement : 'top'
+    });
+
+    function validateInput(input, message) {
+        if (!input.val()) {
+            input.parent().find('.mandatory-text').text(message).show();
+            input.css('border-color', 'red');
+            return false;
+        } else {
+            input.parent().find('.mandatory-text').hide();
+            input.css('border-color', ''); // Reset border color
+            return true;
+        }
+    }
+
+    function hasNonStandard(str) {
+        return !isNaN(str) && !isNaN(parseFloat(str));
+    }
+
+    function calculateTax() {
+        const annualIncome = Number($('#annualIncome').val());
+        const extraIncome = Number($('#extraIncome').val());
+        const age = Number($('#age').val());
+        const deductions = Number($('#deductions').val());
+
+        var income = annualIncome + extraIncome - deductions;
+        var taxAmount = 0;
+
+        if (income <= 800000) {
+            taxAmount = income;
+        } else {
+            if (age < 40) {
+                taxAmount = 0.7 * income;
+            } else if (age >= 40 && age < 60) {
+                taxAmount = 0.6 * income;
+            } else {
+                taxAmount = 0.9 * income;
+            }
+        }
+
+        taxAmount = taxAmount.toFixed(2);
+        return taxAmount;
+    }
+
+    $('#incomeTaxForm').submit(function (e) {
+        e.preventDefault();
+
+        var valid = true;
+
+        valid = validateInput($('#annualIncome'), 'Annual Income is required.') && valid;
+        valid = validateInput($('#extraIncome'), 'Extra Income is required.') && valid;
+        valid = validateInput($('#age'), 'Age is required.') && valid;
+        valid = validateInput($('#deductions'), 'Deductions are required.') && valid;
+
+        if (!valid) {
+            return;
+        }
+
+        var totalTax = calculateTax();
+
+        // Display the total tax amount in a popup
+        $('#totalTaxAmount').text(totalTax);
+        $('#taxModal').modal('show');
+    });
+
+    $('#closeModalBtn').click(function () {
+        $('#taxModal').modal('hide');
+    });
+});
+</script>
+<style>
+    .calculator {
+      border: 1px solid #000;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .calculator label {
+      font-weight: bold;
+    }
+    .bs-example a{
+        font-size: 18px;        
+        text-decoration: none;
+        margin: 0 5px;
+    }
+    .mandatory-text {
+        color: red;
+        display: none;
+    }
+</style>
+</head> 
+<body>
+<div class="container mt-5">
+    <div class="calculator">
+        <h1 class="text-center mb-4">Income Tax Calculator</h1>
+        <form id="incomeTaxForm">
+            <div class="form-group">
+                <label for="annualIncome">Annual Income <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Your yearly income before taxes"></span></a></label>
+                <input type="number" class="form-control" id="annualIncome" name="annualIncome">
+                <div class="mandatory-text"></div>
+            </div>
+            <div class="form-group">
+                <label for="extraIncome">Extra Income <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Any additional income from other sources"></span></a></label>
+                <input type="number" class="form-control" id="extraIncome" name="extraIncome">
+                <div class="mandatory-text"></div>
+            </div>
+            <div class="form-group">
+                <label for="age">Age <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Your age"></span></a></label>
+                <select class="form-control" id="age">
+                    <option value="" selected disabled>Select Age Bracket</option>
+                    <option value="<40">Less than 40 years</option>
+                    <option value=">=40 & <60">Between 40 and 60 years</option>
+                    <option value=">=60">Greater than or equal to 60 years</option>
+                </select>
+                <div class="mandatory-text"></div>
+            </div>
+            <div class="form-group">
+                <label for="deductions">Deductions <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Any deductions from your salary such as insurance premiums, retirement contributions, etc."></span></a></label>
+                <input type="number" class="form-control" id="deductions" name="deductions">
+                <div class="mandatory-text"></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Calculate</button>
+        </form>
+    </div>
+</div>
+
+<!-- Popup Modal -->
+<div class="modal fade" id="taxModal" tabindex="-1" role="dialog" aria-labelledby="taxModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-center" id="taxModalLabel">Total Tax Amount</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col text-center">
+                        <p>Total Tax Amount: <span id="totalTaxAmount"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
