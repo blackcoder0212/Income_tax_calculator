@@ -14,26 +14,33 @@ $(document).ready(function(){
         placement : 'top'
     });
 
+    // Function to validate input and display error message
     function validateInput(input, message) {
-        if (!input.val()) {
-            input.parent().find('.mandatory-text').text(message).show();
-            input.css('border-color', 'red');
-            return false;
-        } else {
-            input.parent().find('.mandatory-text').hide();
-            input.css('border-color', ''); // Reset border color
-            return true;
-        }
+    if (!input.val() || !input.val().trim()) {
+        input.parent().find('.mandatory-text').text(message).show();
+        input.css('border-color', 'red');
+        input.siblings('.input-group-append').find('.fa-question-circle').css('color', 'red'); // Change color of the question circle icon
+        input.siblings('.input-group-append').find('.fa-info-circle').show(); // Show info circle icon
+        return false;
+    } else if (isNaN(input.val().trim())) {
+        input.parent().find('.mandatory-text').text(message).show();
+        input.css('border-color', 'red');
+        input.siblings('.input-group-append').find('.fa-question-circle').css('color', 'red'); // Change color of the question circle icon
+        input.siblings('.input-group-append').find('.fa-info-circle').show(); // Show info circle icon
+        return false;
+    } else {
+        input.parent().find('.mandatory-text').hide();
+        input.css('border-color', ''); // Reset border color
+        input.siblings('.input-group-append').find('.fa-question-circle').css('color', ''); // Reset color of the question circle icon
+        input.siblings('.input-group-append').find('.fa-info-circle').hide(); // Hide info circle icon
+        return true;
     }
-
-    function hasNonStandard(str) {
-        return !isNaN(str) && !isNaN(parseFloat(str));
-    }
+}
 
     function calculateTax() {
         const annualIncome = Number($('#annualIncome').val());
         const extraIncome = Number($('#extraIncome').val());
-        const age = Number($('#age').val());
+        const age = parseInt($('#age').val()); 
         const deductions = Number($('#deductions').val());
 
         var income = annualIncome + extraIncome - deductions;
@@ -42,9 +49,9 @@ $(document).ready(function(){
         if (income <= 800000) {
             taxAmount = income;
         } else {
-            if (age < 40) {
+            if (age == 0 ) {
                 taxAmount = 0.7 * income;
-            } else if (age >= 40 && age < 60) {
+            } else if (age == 1) {
                 taxAmount = 0.6 * income;
             } else {
                 taxAmount = 0.9 * income;
@@ -55,15 +62,21 @@ $(document).ready(function(){
         return taxAmount;
     }
 
+
     $('#incomeTaxForm').submit(function (e) {
         e.preventDefault();
 
         var valid = true;
 
-        valid = validateInput($('#annualIncome'), 'Annual Income is required.') && valid;
-        valid = validateInput($('#extraIncome'), 'Extra Income is required.') && valid;
-        valid = validateInput($('#age'), 'Age is required.') && valid;
-        valid = validateInput($('#deductions'), 'Deductions are required.') && valid;
+        valid = validateInput($('#annualIncome'), 'Annual Income is required and should be a number.') && valid;
+        console.log(valid)
+        valid = validateInput($('#extraIncome'), 'Extra Income is required and should be a number.') && valid;
+        console.log(valid)
+        console.log($('#age'))
+        valid = validateInput($('#age'), 'Age group is required') && valid;
+        console.log(valid)
+        valid = validateInput($('#deductions'), 'Deductions are required and should be a number.') && valid;
+        console.log(valid)
 
         if (!valid) {
             return;
@@ -76,10 +89,21 @@ $(document).ready(function(){
         $('#taxModal').modal('show');
     });
 
-    $('#closeModalBtn').click(function () {
-        $('#taxModal').modal('hide');
+    // Event listener for age input
+    $('#age').change(function() {
+        validateInput($(this), 'Age group is required');
     });
+
+    // Event listener for deductions input
+    $('#deductions').keyup(function() {
+        validateInput($(this), 'Deductions are required and should be a number.');
+    });
+    
+    // Hide info circle icons initially
+    $('.fa-info-circle').hide();
 });
+
+
 </script>
 <style>
     .calculator {
@@ -89,11 +113,6 @@ $(document).ready(function(){
     }
     .calculator label {
       font-weight: bold;
-    }
-    .bs-example a{
-        font-size: 18px;        
-        text-decoration: none;
-        margin: 0 5px;
     }
     .mandatory-text {
         color: red;
@@ -107,28 +126,43 @@ $(document).ready(function(){
         <h1 class="text-center mb-4">Income Tax Calculator</h1>
         <form id="incomeTaxForm">
             <div class="form-group">
-                <label for="annualIncome">Annual Income <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Your yearly income before taxes"></span></a></label>
-                <input type="number" class="form-control" id="annualIncome" name="annualIncome">
+                <label for="annualIncome">Enter gross annual income <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Gross annual income is your total salary in a year before any deductions"></span></a></label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="annualIncome" name="annualIncome">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-info-circle" style="color: black;" data-toggle="tooltip" title="Please enter numbers only."></i></span>
+                    </div>
+                </div>
                 <div class="mandatory-text"></div>
             </div>
             <div class="form-group">
-                <label for="extraIncome">Extra Income <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Any additional income from other sources"></span></a></label>
-                <input type="number" class="form-control" id="extraIncome" name="extraIncome">
+                <label for="extraIncome">Enter extra income <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Extra income is income in a year you have earned from other resources"></span></a></label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="extraIncome" name="extraIncome">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-info-circle" style="color: black;" data-toggle="tooltip" title="Please enter numbers only."></i></span>
+                    </div>
+                </div>
                 <div class="mandatory-text"></div>
             </div>
             <div class="form-group">
-                <label for="age">Age <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Your age"></span></a></label>
+                <label for="age">Enter age group <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Your age group"></span></a></label>
                 <select class="form-control" id="age">
                     <option value="" selected disabled>Select Age Bracket</option>
-                    <option value="<40">Less than 40 years</option>
-                    <option value=">=40 & <60">Between 40 and 60 years</option>
-                    <option value=">=60">Greater than or equal to 60 years</option>
+                    <option value="0">Less than 40 years</option>
+                    <option value="1">Between 40 and 60 years</option>
+                    <option value="2">Greater than or equal to 60 years</option>
                 </select>
                 <div class="mandatory-text"></div>
             </div>
             <div class="form-group">
-                <label for="deductions">Deductions <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Any deductions from your salary such as insurance premiums, retirement contributions, etc."></span></a></label>
-                <input type="number" class="form-control" id="deductions" name="deductions">
+                <label for="deductions">Enter total applicable deductions <a href="#"><span class="fa fa-question-circle" data-toggle="tooltip" data-original-title="Applicable deductions are the deductions of rent,loan,transport etc."></span></a></label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="deductions" name="deductions">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-info-circle" style="color: black;" data-toggle="tooltip" title="Please enter numbers only."></i></span>
+                    </div>
+                </div>
                 <div class="mandatory-text"></div>
             </div>
             <button type="submit" class="btn btn-primary">Calculate</button>
@@ -138,23 +172,19 @@ $(document).ready(function(){
 
 <!-- Popup Modal -->
 <div class="modal fade" id="taxModal" tabindex="-1" role="dialog" aria-labelledby="taxModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-center" id="taxModalLabel">Total Tax Amount</h5>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col text-center">
-                        <p>Total Tax Amount: <span id="totalTaxAmount"></span></p>
-                    </div>
-                </div>
+            <div class="modal-body text-center">
+                <h4 class="mb-4">Your Overall Income After Tax Deductions</h4>
+                <p class="h2 font-weight-bold text-primary mb-4"><span id="totalTaxAmount">{income}</span></p>
+                <p class="lead">Thank you for using our service.</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="closeModalBtn" class="btn btn-primary btn-lg" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
-</body>
 
+</body>
+</html>
